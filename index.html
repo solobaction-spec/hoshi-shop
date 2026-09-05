@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星雲OFFICIAL SHOP</title>
+    <style>
+        :root {
+            --bg-color:#061a36; --card-bg:#0d2a50; --text-main:#fff; --text-muted:#b8c9df;
+            --border-color:#25486f; --accent-color:#78aaff; --accent-light:#173d6d;
+            --danger-color:#ff7086; --success-color:#62d1a3; --accent-dark:#4d82d8;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            padding-top: 50px;
+            user-select: none;
+        }
+
+        .hidden { display: none !important; }
+
+        #top-taskbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px;
+            background-color: var(--taskbar-bg);
+            border-bottom: 2px solid var(--accent-light);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 1rem; box-sizing: border-box; z-index: 5000;
+        }
+        
+        .taskbar-left { display: flex; align-items: center; gap: 1rem; }
+        .taskbar-logo { font-size: 1.1rem; font-weight: bold; color: var(--accent-color); cursor: pointer; }
+
+        .user-status-badge {
+            font-size: 0.75rem; background: var(--bg-color); padding: 0.2rem 0.6rem;
+            border-radius: 20px; border: 1px solid var(--border-color); color: var(--text-color);
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .user-avatar-mini {
+            width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: #ccc;
+        }
+        .user-status-badge .role-tag {
+            color: #fff; background: var(--accent-color); padding: 0.1rem 0.4rem; border-radius: 10px; font-size: 0.65rem;
+        }
+
+        .taskbar-right { display: flex; align-items: center; gap: 0.6rem; }
+
+        .menu-btn-wrap { position: relative; }
+        .menu-btn { font-size: 1.3rem; background: none; border: none; color: var(--accent-color); cursor: pointer; padding: 0 0.4rem; }
+        .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+            background-color: #ef4444; border-radius: 50%; border: 2px solid #fff;
+        }
+
+        .dropdown-menu {
+            position: absolute; top: 100%; right: 0; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; width: 220px; z-index: 6000; overflow: hidden;
+        }
+        .dropdown-menu button {
+            background: transparent; color: var(--text-color); border: none; padding: 0.75rem 1rem;
+            text-align: left; width: 100%; border-bottom: 1px solid var(--border-color); border-radius: 0;
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold;
+        }
+        .dropdown-menu button:hover { background: var(--accent-light); color: var(--accent-color); }
+        .dropdown-menu button:last-child { border-bottom: none; }
+
+        #block-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0.98); color: #ef4444;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 99999; text-align: center; padding: 2rem; box-sizing: border-box;
+        }
+
+        #auth-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 4500; padding: 1rem; box-sizing: border-box;
+        }
+        .auth-card {
+            background: var(--card-bg); padding: 2rem; border-radius: 8px; width: 340px; text-align: center; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .container { display:flex; flex-direction:column; padding:16px; gap:16px; max-width:1440px; margin:auto; }
+        @media (min-width: 768px) {
+            .container { flex-direction:row; padding:24px; }
+            aside { width:230px; flex:0 0 230px; }
+        }
+        aside { background:var(--card-bg); padding:16px; border-radius:14px; height:fit-content; border:1px solid var(--border-color); box-shadow:0 4px 18px rgba(15,23,42,.04); }
+        .filter-group { margin-bottom: 1rem; }
+        .filter-group label { display: block; margin-bottom: 0.4rem; font-size: 0.85rem; color: var(--text-muted); font-weight: bold; }
+        input, select, textarea {
+            width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color);
+            background-color: #fff; color: var(--text-color); box-sizing: border-box; font-size: 0.9rem;
+        }
+
+        main { flex: 1; }
+        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+        .card {
+            background:var(--card-bg); border-radius:14px; overflow:hidden;
+            display:flex; flex-direction:column; border:1px solid var(--border-color); position:relative;
+            box-shadow:0 5px 20px rgba(15,23,42,.05); transition:transform .18s ease, box-shadow .18s ease;
+        }
+        .card:hover { transform:translateY(-2px); box-shadow:0 9px 28px rgba(15,23,42,.08); }
+        .fav-btn {
+            position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border-color); color: #cbd5e1; font-size: 1.2rem; border-radius: 50%; width: 34px; height: 34px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10;
+        }
+        .fav-btn.active { color: #f59e0b; border-color: #f59e0b; }
+        
+        .card-img-wrap {
+            width:100%; height:180px; background:#0d2a50; display:flex; justify-content:center; align-items:center; overflow:hidden;
+        }
+        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+        .card-content { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+        .card-title { font-weight: bold; font-size: 1rem; color: var(--accent-color); }
+        .card-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .card-price { font-size: 1.1rem; color: var(--text-color); font-weight: bold; margin-top: auto; }
+
+        button {
+            background-color: var(--accent-color); color: white; border: none; padding: 0.5rem 0.8rem;
+            border-radius: 4px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; font-weight: bold;
+        }
+        button:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: #94a3b8; }
+        .btn-secondary:hover { background-color: #64748b; }
+        .btn-admin { background-color: var(--admin-color); }
+        .btn-danger { background-color: #dc2626; }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 7000;
+        }
+        .modal-content {
+            background: var(--card-bg); padding: 1.5rem; border-radius: 8px; width: 600px; max-width: 90%; max-height: 85vh; overflow-y: auto;
+            border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .admin-tab-bar {
+            display: flex; gap: 0.4rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.2rem; overflow-x: auto;
+        }
+        .admin-tab-btn {
+            background: transparent; border: none; padding: 0.6rem 1rem; color: var(--text-muted);
+            border-bottom: 2px solid transparent; border-radius: 0; font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+        .admin-tab-btn.active {
+            color: var(--accent-color); border-bottom-color: var(--accent-color); background: var(--accent-light);
+        }
+
+        .mail-dm-container { display: flex; height: 380px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
+        .user-list-left { width: 180px; background: #f1f5f9; border-right: 1px solid var(--border-color); overflow-y: auto; }
+        .user-item { padding: 0.6rem; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem; }
+        .user-item:hover, .user-item.active { background: var(--accent-light); font-weight: bold; color: var(--accent-color); }
+        .chat-main-right { flex: 1; display: flex; flex-direction: column; background: #fff; padding: 0.8rem; }
+        .chat-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .chat-msg { display: flex; gap: 0.5rem; align-items: flex-start; }
+        .chat-bubble { background: #f1f5f9; color: var(--text-color); padding: 0.5rem 0.8rem; border-radius: 8px; max-width: 75%; font-size: 0.85rem; word-break: break-all; }
+        .chat-msg.me { flex-direction: row-reverse; }
+        .chat-msg.me .chat-bubble { background: var(--accent-color); color: #fff; }
+
+        .admin-item-row { border-bottom: 1px solid var(--border-color); padding: 0.6rem 0; font-size: 0.85rem; }
+        
+        #toast {
+            position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: white;
+            padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: bold;
+        }
+    
+        .tag-chip{display:inline-flex;align-items:center;padding:.15rem .5rem;margin:.12rem;border-radius:999px;background:var(--accent-light);color:var(--accent-color);font-size:.72rem;font-weight:700}
+        .avatar-preview-wrap{width:120px;height:120px;margin:.6rem auto;overflow:hidden;border:1px solid var(--border-color);border-radius:12px;background:#0d2a50;display:flex;align-items:center;justify-content:center}
+        .avatar-preview-wrap img{width:100%;height:100%;object-fit:contain;transform-origin:center}
+    
+        .preview-btn{width:100%;margin-top:.35rem;background:#334155}
+        .preview-btn:hover{background:#1e293b}
+        .tag-chip{display:inline-flex;align-items:center;padding:.16rem .5rem;margin:.12rem .08rem;border-radius:999px;background:var(--accent-light);color:var(--accent-color);font-size:.7rem;font-weight:700}
+        .field-label{display:block;margin:.45rem 0 .25rem;font-size:.78rem;font-weight:700;color:var(--text-muted)}
+        .empty-cover{height:180px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.8rem}
+        .request-note{font-size:.74rem;color:var(--text-muted);line-height:1.5;margin:.35rem 0 .7rem}
+    
+        input, select, textarea { border-color:var(--border-color); background:#0b2345;color:#fff; }
+        input:focus, select:focus, textarea:focus {
+            outline:none; border-color:var(--accent-color);
+            box-shadow:0 0 0 3px rgba(118,87,217,.10);
+        }
+    
+        .auth-title{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem}
+        .auth-title>span{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--accent-light);color:var(--accent-color)}
+        .auth-title h3{margin:0}
+        .auth-title small{color:var(--text-muted);font-size:.72rem}
+        .avatar-preview-stage{padding:1rem;border-radius:14px;background:#0d2a50;border:1px solid var(--border-color);margin-top:.8rem;text-align:center}
+        .avatar-preview-frame{width:150px;height:150px;margin:auto;border-radius:50%;overflow:hidden;background:#0b2345;color:#fff;border:5px solid #fff;box-shadow:0 8px 25px rgba(67,50,115,.14);display:flex;align-items:center;justify-content:center}
+        .avatar-preview-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform-origin:center;display:block;}
+        .avatar-preview-caption{margin-top:.6rem;font-size:.7rem;color:var(--text-muted)}
+        .request-image-preview{margin-top:.65rem;padding:.55rem;border:1px solid var(--border-color);border-radius:12px;background:#faf9ff}
+        .request-image-preview img{display:block;width:100%;max-height:180px;object-fit:contain;border-radius:8px}
+        .field-label{display:block;margin:.55rem 0 .25rem;font-size:.78rem;font-weight:750;color:var(--text-main)}
+    
+        .avatar-preview-heading{font-size:.8rem;font-weight:800;margin-bottom:.7rem;color:var(--text-main)}
+        .avatar-preview-row{display:flex;align-items:center;justify-content:center;gap:1.4rem;flex-wrap:wrap}
+        .avatar-preview-frame{position:relative;width:150px;height:150px;margin:auto;border-radius:50%;overflow:hidden;background:#0b2345;color:#fff;border:5px solid #fff;box-shadow:0 8px 25px rgba(67,50,115,.14)}
+        .avatar-preview-frame img,.avatar-mini-circle img{position:absolute;left:50%;top:50%;max-width:none;object-fit:cover;transform-origin:center;display:block}
+        .avatar-preview-caption{margin-top:.45rem;font-size:.7rem;color:var(--text-muted);text-align:center}
+        .avatar-mini-mock{display:flex;align-items:center;gap:.65rem;padding:.7rem .9rem;border:1px solid var(--border-color);background:#0b2345;color:#fff;border-radius:12px;min-width:180px;box-shadow:0 4px 15px rgba(67,50,115,.06)}
+        .avatar-mini-circle{position:relative;width:46px;height:46px;border-radius:50%;overflow:hidden;flex:0 0 46px;background:var(--accent-light)}
+        .avatar-mini-name{font-weight:800;font-size:.78rem}
+        .avatar-mini-role{font-size:.66rem;color:var(--text-muted);margin-top:.15rem}
+        .avatar-control-label{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;margin-top:.45rem}
+        .avatar-control-label output{font-variant-numeric:tabular-nums;color:var(--accent-color);font-weight:800}
+    
+        @media (max-width:600px){
+            .modal-content{width:calc(100% - 24px);max-height:88vh;overflow:auto}
+            .avatar-preview-row{gap:.8rem}
+            .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        }
+    
+        .notification-badge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:99px;background:#ff6078;color:#fff;font-size:.65rem;font-weight:800}
+        .dm-recipient-info{margin:.5rem 0 .8rem}.dm-route-note{padding:.7rem .85rem;border:1px solid #31557f;border-radius:10px;background:#102f59;color:#dce8f8;font-size:.78rem}.dm-admin-chip{display:inline-block;margin:.2rem;padding:.25rem .5rem;border-radius:99px;background:#173d6d;color:#cfe0ff}
+        .product-description{color:#d9e5f4;line-height:1.65;font-size:.82rem;margin:.6rem 0}
+        input,select,textarea{background:#0b2345!important;color:#fff!important;border-color:#31557f!important} input::placeholder,textarea::placeholder{color:#8198b5}
+    </style>
+</head>
+<body>
+
+    <div id="top-taskbar">
+        <div class="taskbar-left">
+            <div class="taskbar-logo" onclick="location.reload()">星雲OFFICIAL SHOP</div>
+            <div class="user-status-badge">
+                <img id="user-avatar-mini" class="user-avatar-mini hidden" src="" alt="">
+                <span id="user-status-text">ゲスト閲覧中</span>
+                <span id="user-role-tag" class="role-tag">ゲスト</span>
+            </div>
+        </div>
+        
+        <div class="taskbar-right">
+            <button class="btn-secondary" onclick="openCartModal()">カート (<span id="cart-count">0</span>)</button>
+            
+            <div class="menu-btn-wrap">
+                <button class="menu-btn" onclick="toggleNavMenu()">☰</button>
+                <div id="menu-notification-dot" class="notification-dot hidden"></div>
+            </div>
+
+            <div id="dropdown-menu" class="dropdown-menu hidden">
+                <button id="menu-profile-btn" onclick="openProfileModal(); toggleNavMenu();">プロフィール設定</button>
+                <button id="menu-role-btn" class="hidden" onclick="toggleRoleModal(); toggleNavMenu();">立場切り替え</button>
+                <button id="menu-req-btn" class="hidden" onclick="openModal('request-modal'); toggleNavMenu();">リクエスト送信</button>
+                <button id="menu-dm-btn" class="hidden" onclick="openMailboxModal(); toggleNavMenu();">
+                    DM (メッセージ) <span id="menu-dm-badge" class="hidden" style="color:#ef4444; font-weight:bold;">●</span>
+                </button>
+                <button id="menu-fav-btn" onclick="toggleFavFilter(); toggleNavMenu();">★ お気に入り一覧</button>
+                <button onclick="openRecentModal(); toggleNavMenu();">最近見た商品</button>
+                <button id="menu-history-btn" class="hidden" onclick="openHistoryModal(); toggleNavMenu();">購入履歴</button>
+                <button id="menu-admin-btn" class="btn-admin hidden" onclick="openAdminModal(); toggleNavMenu();">管理者パネル</button>
+                <button id="menu-login-btn" onclick="location.reload()">ログイン画面へ</button>
+                <button id="menu-logout-btn" class="hidden" onclick="logout()">ログアウト</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="block-overlay" class="hidden">
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem; color:#ef4444;">⚠️ アカウント凍結</h1>
+        <h2 style="color: var(--text-color); font-size: 1.2rem;">ブロックされました。管理者から操作を凍結されています。</h2>
+        <p style="color: var(--text-muted); margin-top: 1rem;">解除されるまで一切の操作は行えません。</p>
+        <button class="btn-secondary" onclick="logout()" style="margin-top: 1.5rem;">ログアウト</button>
+    </div>
+
+    <div id="auth-gate">
+        <div class="auth-card">
+            <h2 style="color:var(--accent-color); margin-top:0;">星雲OFFICIAL SHOP</h2>
+            <div id="auth-main-btns">
+                <button onclick="enterAsGuest()" style="width:100%; margin-bottom:0.6rem;">ゲストとして参加</button>
+                <button onclick="showAuthForm('login')" class="btn-secondary" style="width:100%; margin-bottom:0.6rem;">ログイン</button>
+                <button onclick="showAuthForm('register')" class="btn-secondary" style="width:100%;">新規登録</button>
+            </div>
+
+            <div id="auth-form-box" class="hidden" style="margin-top: 1rem; text-align: left;">
+                <h4 id="auth-form-title" style="margin-bottom:0.5rem;">ログイン</h4>
+                <input type="text" id="auth-username" style="margin-bottom:0.5rem;">
+                <input type="password" id="auth-password" style="margin-bottom:0.8rem;">
+                
+                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.8rem;">
+                    <input type="checkbox" id="auth-remember" style="width:auto;">
+                    <label for="auth-remember" style="font-size:0.8rem; color:var(--text-muted);">ログイン状態を維持</label>
+                </div>
+
+                <button id="auth-submit-btn" onclick="processAuth()" style="width:100%;">実行</button>
+                <button onclick="hideAuthForm()" class="btn-secondary" style="width:100%; margin-top:0.4rem;">戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <div class="container">
+            <aside>
+                <h3>条件絞り込み</h3>
+                <div class="filter-group">
+                    <label>検索</label>
+                    <input type="text" id="search-keyword" oninput="filterProducts()">
+                </div>
+                <div class="filter-group">
+                    <label>並び替え</label>
+                    <select id="filter-sort" onchange="filterProducts()">
+                        <option value="new">新着順</option>
+                        <option value="price-asc">価格が安い順</option>
+                        <option value="price-desc">価格が高い順</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>期生</label>
+                    <select id="filter-gen" onchange="filterProducts()"></select>
+                </div>
+                <div class="filter-group">
+                    <label>メンバー</label>
+                    <select id="filter-member" onchange="filterProducts()"></select>
+                </div>
+                <div class="filter-group">
+                    <label>種別</label>
+                    <select id="filter-type" onchange="filterProducts()">
+                        <option value="">すべて</option>
+                        <option value="voice">ボイス</option>
+                        <option value="goods">グッズ</option>
+                    </select>
+                </div>
+            </aside>
+
+            <main>
+                <div class="product-grid" id="product-list"></div>
+            </main>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>プロフィール設定</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">ユーザー名: <b id="profile-uname-display"></b></p>
+            
+            <div style="margin: 1rem 0;">
+                <label style="font-size: 0.85rem; font-weight: bold;">アイコン設定</label>
+                <div style="margin-top:0.4rem;">
+                    <span style="font-size:0.75rem;">画像ファイルを添付:</span>
+                    
+                    <span style="font-size:0.75rem;">または画像URL:</span>
+                    
+                    <div style="margin-top:.8rem;">
+                        <label class="avatar-control-label"><span>アイコンサイズ</span><output id="avatar-size-value">100</output></label>
+                        
+                        <label class="avatar-control-label"><span>拡大率</span><output id="avatar-scale-value">100</output></label>
+                        
+                        <label class="avatar-control-label"><span>横位置</span><output id="avatar-pos-x-value">100</output></label>
+                        
+                        <label class="avatar-control-label"><span>縦位置</span><output id="avatar-pos-y-value">100</output></label>
+                        
+                    </div>
+                    
+                        
+                                
+                            </div>
+                            <div class="avatar-mini-mock">
+                                <div class="avatar-mini-circle"><img id="profile-avatar-mini-preview" alt=""></div>
+                                <div>
+                                    <div class="avatar-mini-name" id="profile-avatar-name-preview">ユーザーネーム</div>
+                                    <div class="avatar-mini-role">ユーザー</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="saveProfile()" style="margin-top:0.8rem; width:100%;">設定を保存</button>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:1.5rem 0;">
+            <button class="btn-danger" onclick="deleteOwnAccount()" style="width:100%;">退会</button>
+            <button class="btn-secondary" onclick="closeModal('profile-modal')" style="width:100%; margin-top:0.5rem;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="role-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>立場切り替え</h3>
+            <p style="font-size: 0.85rem;">現在の立場: <b id="current-role-label">顧客</b></p>
+            <div id="admin-key-group">
+                <input type="password" id="admin-key-input" style="margin-bottom: 1rem;">
+            </div>
+            <button onclick="switchRole()" style="width:100%;">切り替える</button>
+            <button class="btn-secondary" onclick="closeModal('role-modal')" style="margin-top: 0.5rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="product-detail-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="btn-secondary" onclick="closeModal('product-detail-modal')" style="float:right;">閉じる</button>
+            <div id="product-detail-body"></div>
+        </div>
+    </div>
+
+    <div id="recent-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="btn-secondary" onclick="closeModal('recent-modal')" style="float:right;">閉じる</button>
+            <h3>最近見た商品</h3>
+            <div id="recent-product-list"></div>
+        </div>
+    </div>
+
+    <div id="request-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>リクエスト送信</h3>
+            <input type="hidden" id="req-category" value="リクエスト">
+            <label for="req-title" style="font-size:0.8rem; font-weight:bold;">タイトル</label>
+            <input type="text" id="req-title" placeholder="リクエストのタイトルを入力" style="margin-bottom: 0.5rem;">
+<label class="field-label" for="req-product-desc">商品説明</label><textarea id="req-product-desc" rows="4" placeholder="購入者に表示する商品の内容・特徴"></textarea>
+            <div style="display:flex; gap:0.5rem; margin-bottom: 0.5rem;">
+                <select id="req-gen"></select>
+                <select id="req-member"></select>
+                <select id="req-type">
+                    <option value="voice">ボイス</option>
+                    <option value="goods">グッズ</option>
+                </select>
+            </div>
+            <label for="req-price" style="font-size:0.8rem; font-weight:bold;">希望価格（円）</label>
+            <input type="number" id="req-price" placeholder="例：1500" style="margin-bottom: 0.5rem;">
+            <label for="req-tags" style="font-size:0.8rem; font-weight:bold;">ハッシュタグ</label>
+            <input type="text" id="req-tags" placeholder="#ボイス #記念 #新作" style="margin-bottom:0.6rem;">
+            <label class="field-label" for="req-image-file">参考画像・イメージ画像（任意）</label>
+            <div style="padding:.8rem;border:1px dashed #cfc5eb;border-radius:12px;background:#faf9ff;">
+                <input type="file" id="req-image-file" accept="image/*" style="width:100%;margin:0;">
+                <div id="req-image-preview-wrap" class="request-image-preview hidden">
+                    <img id="req-image-preview" alt="参考画像プレビュー">
+                </div>
+            </div>
+            <p class="request-note">参考画像を貼り付けて、希望するデザインや雰囲気を管理者に伝えられます。</p>
+            <label class="field-label" for="req-audio-file">音声ファイル（任意・ボイス用）</label>
+            <input type="file" id="req-audio-file" accept="audio/*" style="margin-bottom:1rem;">
+            <button onclick="submitRequest()" style="width:100%;">送信</button>
+            <button class="btn-secondary" onclick="closeModal('request-modal')" style="margin-top: 0.5rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="mailbox-modal" class="modal hidden">
+        <div class="modal-content" style="width: 650px;">
+            <h3>ダイレクトメッセージ</h3>
+            <div class="mail-dm-container">
+                <div class="user-list-left" id="dm-user-list"></div>
+                <div class="chat-main-right">
+                    <div id="chat-target-header" style="font-size:0.85rem; font-weight:bold; margin-bottom:0.4rem; color:var(--accent-color);">会話相手を選択してください</div>
+                    <div id="chat-box" class="chat-box"></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="chat-input">
+                        <button onclick="sendChatMessage()">送信</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-secondary" onclick="closeModal('mailbox-modal')" style="margin-top: 0.8rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="modal hidden">
+        <div class="modal-content" style="width: 680px;">
+            <h3>管理者コントロールパネル</h3>
+
+            <div class="admin-tab-bar">
+                <button class="admin-tab-btn active" onclick="switchAdminTab(event, 'users')">アカウント管理</button><button onclick="openNotifications()">通知 <span id="notification-badge" class="notification-badge hidden">0</span></button>
+                <button class="admin-tab-btn" onclick="switchAdminTab(event, 'requests')">受信リクエスト</button>
+                <button class="admin-tab-btn" onclick="switchAdminTab(event, 'add-product')">商品出品</button>
+                <button class="admin-tab-btn" onclick="switchAdminTab(event, 'categories')">カテゴリ・商品管理</button>
+            </div>
+
+            <div id="admin-tab-users" class="admin-tab-content">
+                <div id="admin-user-accounts" style="max-height: 280px; overflow-y: auto; background: var(--bg-color); padding: 0.5rem; border-radius: 4px; border:1px solid var(--border-color);"></div>
+            </div>
+
+            <div id="admin-tab-requests" class="admin-tab-content hidden">
+                <div id="admin-mailbox" style="max-height: 280px; overflow-y: auto; background: var(--bg-color); padding: 0.5rem; border-radius: 4px; border:1px solid var(--border-color);"></div>
+            </div>
+
+            <div id="admin-tab-add-product" class="admin-tab-content hidden">
+                <div style="background: var(--bg-color); padding: 0.8rem; border-radius: 4px; border:1px solid var(--border-color);">
+                    <label style="font-size:0.8rem;">タイトル:</label>
+                    <input type="text" id="admin-add-title" style="margin-bottom: 0.4rem;">
+                    <div style="display:flex; gap:0.5rem; margin-bottom: 0.4rem;">
+                        <select id="admin-add-gen"></select>
+                        <select id="admin-add-member"></select>
+                        <select id="admin-add-type">
+                            <option value="voice">ボイス</option>
+                            <option value="goods">グッズ</option>
+                        </select>
+                    </div>
+                    <label style="font-size:0.8rem;">価格 (円):</label>
+                    <input type="number" id="admin-add-price" style="margin-bottom: 0.4rem;">
+                    <label style="font-size:0.8rem; font-weight:bold;">ハッシュタグ:</label>
+                    <input type="text" id="admin-add-tags" placeholder="#新作 #グッズ" style="margin-bottom:0.4rem;">
+
+                    
+                    <label style="font-size:0.8rem; font-weight:bold;">サムネイル画像添付:</label>
+                    <input type="file" id="admin-add-thumb-file" accept="image/*" style="margin-bottom:0.4rem;">
+                    
+                    <label style="font-size:0.8rem; font-weight:bold;">音声ファイル添付 (ボイス用):</label>
+                    <input type="file" id="admin-add-audio-file" accept="audio/*" style="margin-bottom:0.8rem;">
+
+                    <button onclick="adminAddProduct()" style="width:100%;">出品</button>
+                </div>
+            </div>
+
+            <div id="admin-tab-categories" class="admin-tab-content hidden">
+                <div style="margin-bottom: 0.5rem;">
+                    <label>期生一覧:</label>
+                    <div id="gen-tag-list" style="margin-top:0.3rem;"></div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+                        <input type="text" id="add-gen-input">
+                        <button onclick="addCategory('gens', 'add-gen-input')">追加</button>
+                    </div>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label>メンバー一覧:</label>
+                    <div id="member-tag-list" style="margin-top:0.3rem;"></div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+                        <input type="text" id="add-member-input">
+                        <button onclick="addCategory('members', 'add-member-input')">追加</button>
+                    </div>
+                </div>
+
+                <div id="admin-product-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-color); padding: 0.5rem; border-radius: 4px; border:1px solid var(--border-color);"></div>
+            </div>
+
+            <button class="btn-secondary" onclick="closeModal('admin-modal')" style="margin-top: 1rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>カート一覧</h3>
+            <div id="cart-items"></div>
+            <p style="font-weight: bold; margin-top: 1rem;">合計: ¥<span id="cart-total">0</span></p>
+            <button onclick="checkout()" style="width:100%;">購入確定</button>
+            <button class="btn-secondary" onclick="closeModal('cart-modal')" style="margin-top: 0.5rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>購入履歴</h3>
+            <div id="history-items" style="margin-top:1rem;"></div>
+            <button class="btn-secondary" onclick="closeModal('history-modal')" style="margin-top: 1rem; width:100%;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+
+    <script>
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let categories = JSON.parse(localStorage.getItem('categories')) || {
+            gens: ["全期生", "1期生", "2期生", "3期生"],
+            members: ["全員", "メンバーA", "メンバーB"]
+        };
+        let products = JSON.parse(localStorage.getItem('products')) || [];
+        products.forEach(p => { if (p.type === 'image') p.type = 'goods'; });
+        let adminMailbox = JSON.parse(localStorage.getItem('adminMailbox')) || [];
+        let chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        let purchaseHistory = JSON.parse(localStorage.getItem('purchaseHistory')) || [];
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+        let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
+
+        let cart = [];
+        let showOnlyFavs = false;
+        let currentUser = null;
+        let currentRole = 'customer';
+        let authMode = 'login';
+        let activeChatUser = null;
+        let avatarSettings = JSON.parse(localStorage.getItem('avatarSettings')) || {};
+
+        window.onload = function() {
+            updateFilterOptions();
+            renderProducts(products);
+
+            const savedSession = localStorage.getItem('keepSession');
+            if (savedSession && users[savedSession]) {
+                currentUser = users[savedSession];
+                document.getElementById('auth-gate').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                updateUserUI();
+            }
+
+            setInterval(systemMonitor, 500); // リアルタイム同期監視
+        };
+
+        function saveAll() {
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('categories', JSON.stringify(categories));
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('adminMailbox', JSON.stringify(adminMailbox));
+            localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            localStorage.setItem('purchaseHistory', JSON.stringify(purchaseHistory));
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+            localStorage.setItem('avatarSettings', JSON.stringify(avatarSettings));
+        }
+
+        // リロード不要のリアルタイム監視
+        function systemMonitor() {
+            users = JSON.parse(localStorage.getItem('users')) || {};
+            adminMailbox = JSON.parse(localStorage.getItem('adminMailbox')) || [];
+            
+            if (currentUser && !currentUser.isGuest) {
+                const latestUserData = users[currentUser.username];
+                
+                if (!latestUserData) {
+                    localStorage.removeItem('keepSession');
+                    location.reload();
+                    return;
+                }
+
+                // 即時ブロック制御
+                currentUser = latestUserData;
+                if (latestUserData.blocked) {
+                    document.getElementById('block-overlay').classList.remove('hidden');
+                } else {
+                    document.getElementById('block-overlay').classList.add('hidden');
+                }
+
+                if (currentRole === 'admin' && !latestUserData.isAdmin) {
+                    currentRole = 'customer';
+                    updateUserUI();
+                }
+                if (currentRole === 'super_admin' && !latestUserData.isSuperAdminEver) {
+                    currentRole = latestUserData.isAdmin ? 'admin' : 'customer';
+                    currentUser = latestUserData;
+                    updateUserUI();
+                }
+
+                if (currentRole === 'admin' && !latestUserData.isAdmin) {
+                    currentRole = 'customer';
+                    currentUser = latestUserData;
+                    updateUserUI();
+                }
+            }
+
+            // DM新着リアルタイム更新
+            const latestMsgs = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            if (JSON.stringify(latestMsgs) !== JSON.stringify(chatMessages)) {
+                chatMessages = latestMsgs;
+                const unread = chatMessages.some(m => m.target === currentUser?.username);
+                if (unread) {
+                    document.getElementById('menu-notification-dot').classList.remove('hidden');
+                    document.getElementById('menu-dm-badge').classList.remove('hidden');
+                }
+
+                if (!document.getElementById('mailbox-modal').classList.contains('hidden')) {
+                    renderDMUserList();
+                    renderChatMessages();
+                }
+            }
+
+            // 受信リクエストリアルタイム表示
+            if (!document.getElementById('admin-modal').classList.contains('hidden')) {
+                const reqTab = document.getElementById('admin-tab-requests');
+                if (reqTab && !reqTab.classList.contains('hidden')) {
+                    renderAdminMailbox();
+                }
+            }
+        }
+
+        function toggleNavMenu() {
+            document.getElementById('dropdown-menu').classList.toggle('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function enterAsGuest() {
+            currentUser = { username: 'ゲスト', isGuest: true };
+            document.getElementById('auth-gate').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            updateUserUI();
+        }
+
+        function showAuthForm(mode) {
+            authMode = mode;
+            document.getElementById('auth-main-btns').classList.add('hidden');
+            document.getElementById('auth-form-box').classList.remove('hidden');
+            document.getElementById('auth-form-title').innerText = mode === 'login' ? 'ログイン' : '新規登録';
+        }
+
+        function hideAuthForm() {
+            document.getElementById('auth-main-btns').classList.remove('hidden');
+            document.getElementById('auth-form-box').classList.add('hidden');
+        }
+
+        function processAuth() {
+            const u = document.getElementById('auth-username').value.trim();
+            const p = document.getElementById('auth-password').value.trim();
+            const keep = document.getElementById('auth-remember').checked;
+
+            if (!u || !p) return alert('入力してください');
+
+            if (authMode === 'register') {
+                if (users[u]) return alert('使用されています');
+                users[u] = { username: u, password: p, blocked: false, isAdmin: false, isSuperAdminEver: false, avatar: '' };
+                saveAll();
+                alert('登録が完了しました。');
+            }
+
+            if (!users[u] || users[u].password !== p) return alert('ユーザー名またはパスワードが違います');
+
+            currentUser = users[u];
+
+            if (keep) localStorage.setItem('keepSession', u);
+            else localStorage.removeItem('keepSession');
+
+            document.getElementById('auth-gate').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            updateUserUI();
+        }
+
+        function logout() {
+            localStorage.removeItem('keepSession');
+            location.reload();
+        }
+
+        function updateUserUI() {
+            const statusText = document.getElementById('user-status-text');
+            const roleTag = document.getElementById('user-role-tag');
+            const avatarImg = document.getElementById('user-avatar-mini');
+
+            if (currentUser.isGuest) {
+                statusText.innerText = 'ゲスト閲覧中';
+                roleTag.innerText = 'ゲスト';
+                roleTag.style.background = '#94a3b8';
+                avatarImg.classList.add('hidden');
+            } else {
+                statusText.innerText = `[ログイン中] ${currentUser.username}`;
+                if (currentUser.avatar) {
+                    avatarImg.src = currentUser.avatar;
+                    avatarImg.classList.remove('hidden');
+                } else {
+                    avatarImg.classList.add('hidden');
+                }
+
+                if (currentRole === 'super_admin') {
+                    roleTag.innerText = '総管理者';
+                    roleTag.style.background = 'var(--super-admin-color)';
+                } else if (currentRole === 'admin') {
+                    roleTag.innerText = '管理者';
+                    roleTag.style.background = 'var(--admin-color)';
+                } else {
+                    roleTag.innerText = '顧客';
+                    roleTag.style.background = 'var(--accent-color)';
+                }
+            }
+
+            if (!currentUser.isGuest) {
+                document.getElementById('menu-login-btn').classList.add('hidden');
+                document.getElementById('menu-logout-btn').classList.remove('hidden');
+                document.getElementById('menu-role-btn').classList.remove('hidden');
+                document.getElementById('menu-req-btn').classList.remove('hidden');
+                document.getElementById('menu-dm-btn').classList.remove('hidden');
+                document.getElementById('menu-history-btn').classList.remove('hidden');
+            }
+
+            if (currentRole === 'admin' || currentRole === 'super_admin') {
+                document.getElementById('menu-admin-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('menu-admin-btn').classList.add('hidden');
+            }
+        }
+
+        
+
+        // アイコン画像・大きさ・配置
+        function getAvatarSettings(username) {
+            return avatarSettings[username] || {size:100, scale:100, x:50, y:50};
+        }
+
+        
+
+        
+
+
+
+        function deleteOwnAccount() {
+            if (confirm('本当にアカウントを削除しますか？')) {
+                delete users[currentUser.username];
+                saveAll();
+                localStorage.removeItem('keepSession');
+                location.reload();
+            }
+        }
+
+        function toggleRoleModal() {
+            document.getElementById('current-role-label').innerText = currentRole === 'super_admin' ? '総管理者' : (currentRole === 'admin' ? '管理者' : '顧客');
+            document.getElementById('admin-key-group').classList.toggle('hidden', currentRole !== 'customer');
+            document.getElementById('admin-key-input').value = '';
+            openModal('role-modal');
+        }
+
+        function switchRole() {
+            if (currentRole === 'customer') {
+                const key = document.getElementById('admin-key-input').value;
+                if (key === '0999') {
+                    currentRole = 'admin';
+                    users[currentUser.username].isAdmin = true;
+                } else if (key === '9990') {
+                    currentRole = 'super_admin';
+                    users[currentUser.username].isSuperAdminEver = true;
+                    users[currentUser.username].isAdmin = true;
+                } else {
+                    return alert('コードが違います');
+                }
+                saveAll();
+            } else {
+                currentRole = 'customer';
+            }
+            updateUserUI();
+            closeModal('role-modal');
+            showToast(`立場を変更しました`);
+        }
+
+        function previewRequestImage(file) {
+            const wrap = document.getElementById('req-image-preview-wrap');
+            const img = document.getElementById('req-image-preview');
+            if (!wrap || !img) return;
+            if (!file) {
+                wrap.classList.add('hidden');
+                img.removeAttribute('src');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                img.src = e.target.result;
+                wrap.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function parseHashtags(value) {
+            return [...new Set((value || '').match(/#[^\s#]+/g) || [])];
+        }
+
+        // リクエストは画像・音声ファイルを添付可能
+        async function submitRequest() {
+            const category = 'リクエスト';
+            const title = document.getElementById('req-title').value.trim();
+            const productDesc = document.getElementById('req-product-desc')?.value.trim() || '';
+            const gen = document.getElementById('req-gen').value || '1期生';
+            const member = document.getElementById('req-member').value || 'メンバーA';
+            const type = document.getElementById('req-type').value;
+            const price = parseInt(document.getElementById('req-price').value) || 0;
+            const tags = parseHashtags(document.getElementById('req-tags').value);
+            const imageFile = document.getElementById('req-image-file').files[0];
+            const audioFile = document.getElementById('req-audio-file').files[0];
+
+            if (!title) return alert('タイトルを入力してください');
+
+            const readFile = (file) => new Promise((resolve, reject) => {
+                if (!file) return resolve('');
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+                reader.readAsDataURL(file);
+            });
+
+            try {
+                const imageData = imageFile ? await readFile(imageFile) : '';
+                const audioData = type === 'voice' && audioFile ? await readFile(audioFile) : '';
+
+                adminMailbox.unshift({
+                    id: Date.now(), category, title, gen, member, type, price, description: productDesc,
+                    image: imageData,
+                    audio: audioData,
+                    tags,
+                    requester: currentUser.username,
+                    imageName: imageFile ? imageFile.name : '',
+                    audioName: audioFile ? audioFile.name : '',
+                    sender: currentUser.username, date: new Date().toLocaleString()
+                });
+                usersList().filter(u => u.isSuperAdmin === true || u.role === 'superadmin').forEach(u =>
+                    addNotification(u.username, 'リクエスト', '新しい出品リクエスト', `${currentUser.username} から「${title}」のリクエストが届きました。`)
+                );
+
+                saveAll();
+                showToast('リクエストを送信しました');
+                closeModal('request-modal');
+
+                document.getElementById('req-image-file').value = '';
+                document.getElementById('req-image-preview-wrap')?.classList.add('hidden');
+                document.getElementById('req-audio-file').value = '';
+                document.getElementById('req-tags').value = '';
+                document.getElementById('req-product-desc').value = '';
+            } catch (e) {
+                alert('添付ファイルの読み込みに失敗しました');
+            }
+        }
+
+        // DM会話相手・メッセージ制御
+        function openMailboxModal() {
+            openModal('mailbox-modal');
+            document.getElementById('menu-notification-dot').classList.add('hidden');
+            document.getElementById('menu-dm-badge').classList.add('hidden');
+            renderDMUserList();
+        }
+
+        function renderDMUserList() {
+            const list = document.getElementById('dm-user-list');
+            list.innerHTML = '';
+
+            Object.keys(users).forEach(uname => {
+                if (uname === currentUser.username) return;
+
+                const targetUser = users[uname];
+                const div = document.createElement('div');
+                div.className = `user-item ${activeChatUser === uname ? 'active' : ''}`;
+                
+                const avatarTag = targetUser.avatar 
+                    ? `<img src="${targetUser.avatar}" style="width:20px; height:20px; border-radius:50%; object-fit:cover;">`
+                    : `<div style="width:20px; height:20px; border-radius:50%; background:#ccc;"></div>`;
+
+                div.innerHTML = `${avatarTag} <span>${uname}</span>`;
+                div.onclick = () => selectChatUser(uname);
+                list.appendChild(div);
+            });
+        }
+
+        function selectChatUser(uname) {
+            activeChatUser = uname;
+            document.getElementById('chat-target-header').innerText = `${uname} とのメッセージ`;
+            renderDMUserList();
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            const box = document.getElementById('chat-box');
+            if (!activeChatUser) { box.innerHTML = ''; return; }
+
+            const filtered = chatMessages.filter(m => 
+                (m.sender === currentUser.username && m.target === activeChatUser) ||
+                (m.sender === activeChatUser && m.target === currentUser.username)
+            );
+
+            box.innerHTML = filtered.map(m => `
+                <div class="chat-msg ${m.sender === currentUser.username ? 'me' : ''}">
+                    <div class="chat-bubble">
+                        <small style="font-size:0.65rem; color:var(--text-muted); display:block;">${m.sender}</small>
+                        ${m.text}
+                    </div>
+                </div>
+            `).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim() || !activeChatUser) return;
+
+            chatMessages.push({
+                sender: currentUser.username,
+                target: activeChatUser,
+                text: input.value.trim(),
+                timestamp: Date.now()
+            });
+            input.value = '';
+            saveAll();
+            renderChatMessages();
+        }
+
+        function openAdminModal() { openModal('admin-modal'); }
+
+        function switchAdminTab(evt, tabName) {
+            document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.add('hidden'));
+
+            evt.target.classList.add('active');
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'users') renderUserAccounts();
+            if (tabName === 'requests') renderAdminMailbox();
+            if (tabName === 'categories') { renderCategoryTags(); renderAdminProducts(); }
+        }
+
+        function renderUserAccounts() {
+            const container = document.getElementById('admin-user-accounts');
+            container.innerHTML = Object.keys(users).map(uname => {
+                const u = users[uname];
+                return `
+                    <div class="admin-item-row" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <b>${u.username}</b>
+                            ${u.isSuperAdminEver ? '<span style="color:var(--super-admin-color);">[総管理者]</span>' : (u.isAdmin ? '<span style="color:var(--admin-color);">[管理者]</span>' : '')}
+                        </div>
+                        <div style="display:flex; gap:0.3rem; flex-wrap:wrap; justify-content:flex-end;">
+                            ${u.isSuperAdminEver && u.username !== currentUser.username && currentRole === 'super_admin'
+                                ? `<button style="background:var(--super-admin-color);" onclick="revokeUserRole('${u.username}', 'super_admin')">総管理者はく奪</button>` : ''}
+                            ${u.isAdmin && !u.isSuperAdminEver && u.username !== currentUser.username
+                                ? `<button class="btn-admin" onclick="revokeUserRole('${u.username}', 'admin')">管理者はく奪</button>` : ''}
+                            <button class="${u.blocked ? 'btn-secondary' : 'btn-admin'}" onclick="toggleBlockUser('${u.username}')">                                ${u.blocked ? '解凍' : '凍結'}
+                            </button>
+                            <button class="btn-danger" onclick="deleteUserByAdmin('${u.username}')">削除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 権限はく奪:
+        // ・総管理者のはく奪は総管理者だけが実行可能
+        // ・管理者のはく奪は管理者以上が実行可能
+        // ・自分自身の権限はく奪は不可（意図しない権限喪失を防止）
+        function revokeUserRole(uname, role) {
+            const target = users[uname];
+            if (!target) return;
+
+            if (uname === currentUser.username) {
+                return alert('自分自身の権限はく奪はできません');
+            }
+
+            if (role === 'super_admin' && currentRole !== 'super_admin') {
+                return alert('総管理者の権限は総管理者だけがはく奪できます');
+            }
+
+            if (role === 'admin' && currentRole !== 'admin' && currentRole !== 'super_admin') {
+                return alert('管理者の権限をはく奪する権限がありません');
+            }
+
+            const label = role === 'super_admin' ? '総管理者' : '管理者';
+            if (!confirm(`「${uname}」から${label}権限をはく奪しますか？`)) return;
+
+            if (role === 'super_admin') {
+                target.isSuperAdminEver = false;
+                target.isAdmin = false;
+            } else {
+                target.isAdmin = false;
+            }
+
+            saveAll();
+            renderUserAccounts();
+            showToast(`${uname} の${label}権限をはく奪しました`);
+        }
+
+        function toggleBlockUser(uname) {
+            users[uname].blocked = !users[uname].blocked;
+            saveAll();
+            renderUserAccounts();
+            showToast(`${uname} の状態を変更しました`);
+        }
+
+        function deleteUserByAdmin(uname) {
+            if (confirm(`「${uname}」を削除しますか？`)) {
+                delete users[uname];
+                saveAll();
+                renderUserAccounts();
+                showToast(`削除しました`);
+            }
+        }
+
+        function renderAdminMailbox() {
+            const box = document.getElementById('admin-mailbox');
+            if (adminMailbox.length === 0) { box.innerHTML = '<p style="font-size:0.85rem;">リクエストはありません</p>'; return; }
+
+            box.innerHTML = adminMailbox.map(m => `
+                <div class="admin-item-row">
+                    <small style="color:var(--text-muted);">${m.date} | リクエスト者: ${m.requester || m.sender}</small><br>
+                    <b>${m.title}</b> (${m.gen} / ${m.member}) - ¥${m.price}<br>
+                    <p style="margin:0.2rem 0; font-size:0.8rem;">${m.desc || ''}</p>
+                    ${m.image ? `<div style="margin-top:0.5rem;"><small>添付画像: ${m.imageName || '画像'}</small><br><img src="${m.image}" alt="添付画像" style="max-width:220px; max-height:160px; object-fit:contain; border:1px solid var(--border-color); border-radius:4px; margin-top:0.3rem;"></div>` : ''}
+                    ${m.audio ? `<div style="margin-top:0.5rem;"><small>添付音声: ${m.audioName || '音声'}</small><audio controls src="${m.audio}" style="width:100%; margin-top:0.25rem;"></audio></div>` : ''}
+                    <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+                        <button onclick="approveRequest(${m.id})">承認して出品</button>
+                        <button class="btn-secondary" onclick="deleteMail(${m.id})">削除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveRequest(id) {
+            const req = adminMailbox.find(m => m.id === id);
+            if (!req) return;
+
+            products.unshift({
+                id: Date.now(),
+                title: req.title, gen: req.gen, member: req.member,
+                type: req.type, price: req.price,
+                thumb: req.image || '', audio: req.audio || '', description: req.description || '',
+                tags: req.tags || [],
+                creator: req.requester || req.sender || currentUser.username,
+                creatorType: 'リクエスト者'
+            });
+
+            adminMailbox = adminMailbox.filter(m => m.id !== id);
+            saveAll();
+            renderProducts(products);
+            renderAdminMailbox();
+            showToast('出品しました');
+        }
+
+        function deleteMail(id) {
+            adminMailbox = adminMailbox.filter(m => m.id !== id);
+            saveAll();
+            renderAdminMailbox();
+        }
+
+        // 商品出品 (サムネイル画像・音声ファイル選択対応。承認済みリクエストの添付も引き継ぐ)
+        async function adminAddProduct() {
+            const title = document.getElementById('admin-add-title').value;
+            const gen = document.getElementById('admin-add-gen').value || '1期生';
+            const member = document.getElementById('admin-add-member').value || 'メンバーA';
+            const type = document.getElementById('admin-add-type').value;
+            const price = parseInt(document.getElementById('admin-add-price').value) || 0;
+            const tags = parseHashtags(document.getElementById('admin-add-tags').value);
+
+            const thumbFile = document.getElementById('admin-add-thumb-file').files[0];
+            const audioFile = document.getElementById('admin-add-audio-file').files[0];
+
+            if (!title) return alert('タイトルを入力してください');
+
+            const readFile = (file) => new Promise((resolve) => {
+                if (!file) return resolve('');
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+
+            const thumbData = await readFile(thumbFile);
+            const audioData = type === 'voice' ? await readFile(audioFile) : '';
+
+            products.unshift({
+                id: Date.now(), title, gen, member, type, price, description: productDesc, 
+                thumb: thumbData || '',
+                audio: audioData,
+                tags,
+                creator: currentUser.username, description,
+                creatorType: '出品管理者'
+            });
+
+            saveAll();
+            renderProducts(products);
+            showToast('出品完了しました');
+        }
+
+        function renderProducts(items) {
+            const container = document.getElementById('product-list');
+            container.innerHTML = '';
+
+            items.forEach(p => {
+                const isFav = favorites.includes(p.id);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${p.id})">★</button>
+                    <div class="card-img-wrap" style="cursor:pointer;" onclick="openProductDetail(${p.id})">
+                        ${p.thumb ? `<img src="${p.thumb}" alt="${p.title}">` : `<div class="empty-cover">画像なし</div>`}
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title" style="cursor:pointer;" onclick="openProductDetail(${p.id})">${p.title}</div>
+                        <div class="card-meta">${p.gen} / ${p.member}</div>
+                        ${p.creator ? `<div class="card-meta">出品者: ${p.creator}</div>` : ''}
+                        ${p.tags?.length ? `<div>${p.tags.map(t => `<span class="tag-chip">${t}</span>`).join('')}</div>` : ''}
+                        ${p.audio ? `<audio id="preview-audio-${p.id}" class="trial-audio" preload="metadata" src="${p.audio}" style="display:none;"></audio>
+                        <button id="preview-btn-${p.id}" class="preview-btn" onclick="previewVoice(${p.id})">▶ 試し聞き（15秒）</button>` : ''}
+                        <div class="card-price">¥${p.price.toLocaleString()}</div>
+                        <button onclick="addToCart(${p.id})">カートに入れる</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addNotification(username, type, title, detail) {
+            notifications.unshift({id:Date.now()+Math.random(), username, type, title, detail, read:false});
+            notifications = notifications.slice(0,100);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotificationBadge();
+        }
+        function renderNotificationBadge() {
+            const count = notifications.filter(n => n.username === currentUser?.username && !n.read).length;
+            const el = document.getElementById('notification-badge');
+            if (el) { el.textContent = count; el.classList.toggle('hidden', count === 0); }
+        }
+        function openNotifications() {
+            const mine = notifications.filter(n => n.username === currentUser?.username);
+            mine.forEach(n => n.read = true);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotificationBadge();
+            const dm = mine.filter(n => n.type === 'DM');
+            const req = mine.filter(n => n.type === 'リクエスト');
+            alert([...dm.map(n => `DM: ${n.detail}`), ...req.map(n => `リクエスト: ${n.detail}`)].join('\n') || '新しい通知はありません。');
+        }
+
+        function rememberProduct(id) {
+            recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 8);
+            saveAll();
+        }
+
+        function openProductDetail(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+            rememberProduct(id);
+            const body = document.getElementById('product-detail-body');
+            body.innerHTML = `
+                <div style="display:grid;grid-template-columns:minmax(180px,1fr) 1.2fr;gap:1rem;align-items:start;">
+                    <div class="card-img-wrap" style="height:260px;border-radius:12px;">
+                        ${p.thumb ? `<img src="${p.thumb}" alt="${p.title}">` : `<div class="empty-cover">画像なし</div>`}
+                    </div>
+                    <div>
+                        <div class="card-title" style="font-size:1.2rem;">${p.title || '無題'}</div>
+                        <div class="card-meta">${p.gen || ''} / ${p.member || ''}</div>
+                        ${p.creator ? `<div class="card-meta">出品者: ${p.creator}</div>` : ''}
+                        <div style="margin:.45rem 0;">${(p.tags||[]).map(t=>`<span class="tag-chip">${t}</span>`).join('')}</div>
+                        <div class="card-price">¥${Number(p.price||0).toLocaleString()}</div>
+                        ${p.audio ? `<audio id="detail-audio-${p.id}" class="trial-audio" preload="metadata" src="${p.audio}" style="display:none;"></audio>
+                        <button class="preview-btn" onclick="previewVoice(${p.id})">▶ 試し聞き（15秒）</button>` : ''}
+                        <button onclick="addToCart(${p.id}); closeModal('product-detail-modal');">カートに入れる</button>
+                    </div>
+                </div>`;
+            openModal('product-detail-modal');
+        }
+
+        function openRecentModal() {
+            const body=document.getElementById('recent-product-list');
+            const items=recentlyViewed.map(id=>products.find(p=>p.id===id)).filter(Boolean);
+            body.innerHTML = items.length ? items.map(p=>`
+                <div class="admin-item-row" style="display:flex;align-items:center;gap:.7rem;cursor:pointer;" onclick="openProductDetail(${p.id})">
+                    <div style="width:52px;height:52px;border-radius:9px;overflow:hidden;background:var(--accent-light);flex:0 0 52px;">
+                        ${p.thumb ? `<img src="${p.thumb}" style="width:100%;height:100%;object-fit:cover;">` : ''}
+                    </div>
+                    <div><b>${p.title}</b><div class="card-meta">¥${Number(p.price||0).toLocaleString()}</div></div>
+                </div>`).join('') : '<p style="color:var(--text-muted);">まだ見た商品はありません。</p>';
+            openModal('recent-modal');
+        }
+
+        function getDMRecipientsForCurrentUser() {
+            if (!currentUser) return [];
+            const supers = usersList().filter(u => u.isSuperAdmin === true || u.role === 'superadmin');
+            if (currentUser.isSuperAdmin === true || currentUser.role === 'superadmin' || currentUser.role === 'admin') return usersList().filter(u => u.username !== currentUser.username);
+            return supers;
+        }
+
+        function renderDMRouteInfo() {
+            const el = document.getElementById('dm-recipient-info');
+            if (!el || !currentUser) return;
+            const supers = usersList().filter(u => u.isSuperAdmin === true || u.role === 'superadmin');
+            el.innerHTML = (currentUser.isSuperAdmin === true || currentUser.role === 'superadmin')
+                ? '<div class="dm-route-note">総管理者としてDMを送信できます。現在の表示役割が管理者・顧客でも送信権限は維持されます。</div>'
+                : (currentUser.role === 'admin'
+                    ? '<div class="dm-route-note">管理者DMは利用可能です。</div>'
+                    : `<div class="dm-route-note">顧客からのDMは総管理者へ送信されます。${supers.map(u => ` <span class="dm-admin-chip">${u.username}</span>`).join('')}</div>`);
+        }
+
+        function toggleFav(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(fId => fId !== id);
+            } else {
+                favorites.push(id);
+            }
+            saveAll();
+            filterProducts();
+        }
+
+        function toggleFavFilter() {
+            showOnlyFavs = !showOnlyFavs;
+            showToast(showOnlyFavs ? 'お気に入り一覧表示中' : '全商品表示中');
+            filterProducts();
+        }
+
+        function filterProducts() {
+            const kw = (document.getElementById('search-keyword').value || '').trim().toLowerCase();
+            const sort = document.getElementById('filter-sort').value;
+            const gen = document.getElementById('filter-gen').value;
+            const member = document.getElementById('filter-member').value;
+            const type = document.getElementById('filter-type').value;
+
+            let filtered = products.filter(p => {
+                const tagText = (p.tags || []).join(' ').toLowerCase();
+                return ((p.title || '').toLowerCase().includes(kw) || tagText.includes(kw)) &&
+                       (!gen || p.gen === gen) &&
+                       (!member || p.member === member) &&
+                       (!type || p.type === type) &&
+                       (!showOnlyFavs || favorites.includes(p.id));
+            });
+
+            if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+            if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+            if (sort === 'new') filtered.sort((a, b) => b.id - a.id);
+
+            renderProducts(filtered);
+        }
+
+        function updateFilterOptions() {
+            const genSelects = [document.getElementById('filter-gen'), document.getElementById('admin-add-gen'), document.getElementById('req-gen')];
+            const memberSelects = [document.getElementById('filter-member'), document.getElementById('admin-add-member'), document.getElementById('req-member')];
+
+            genSelects.forEach(s => { if(s) s.innerHTML = categories.gens.map(g => `<option value="${g === '全期生' ? '' : g}">${g}</option>`).join(''); });
+            memberSelects.forEach(s => { if(s) s.innerHTML = categories.members.map(m => `<option value="${m === '全員' ? '' : m}">${m}</option>`).join(''); });
+        }
+
+        function renderCategoryTags() {
+            document.getElementById('gen-tag-list').innerHTML = categories.gens.map(g => 
+                `<span style="background:var(--accent-light); padding:0.2rem 0.5rem; border-radius:4px; margin-right:0.4rem; font-size:0.8rem; color:var(--accent-color); font-weight:bold;">
+                    ${g} ${g !== '全期生' ? `<span style="color:#ef4444; cursor:pointer;" onclick="deleteCategory('gens', '${g}')">×</span>` : ''}
+                </span>`
+            ).join('');
+
+            document.getElementById('member-tag-list').innerHTML = categories.members.map(m => 
+                `<span style="background:var(--accent-light); padding:0.2rem 0.5rem; border-radius:4px; margin-right:0.4rem; font-size:0.8rem; color:var(--accent-color); font-weight:bold;">
+                    ${m} ${m !== '全員' ? `<span style="color:#ef4444; cursor:pointer;" onclick="deleteCategory('members', '${m}')">×</span>` : ''}
+                </span>`
+            ).join('');
+        }
+
+        function addCategory(type, inputId) {
+            const val = document.getElementById(inputId).value.trim();
+            if (val && !categories[type].includes(val)) {
+                categories[type].push(val);
+                saveAll();
+                updateFilterOptions();
+                renderCategoryTags();
+            }
+        }
+
+        function deleteCategory(type, value) {
+            categories[type] = categories[type].filter(item => item !== value);
+            saveAll();
+            updateFilterOptions();
+            renderCategoryTags();
+        }
+
+        function renderAdminProducts() {
+            const container = document.getElementById('admin-product-list');
+            container.innerHTML = products.map(p => `
+                <div class="admin-item-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${p.title}</b> - ¥${p.price}</div>
+                    <button class="btn-admin" onclick="deleteProduct(${p.id})">削除</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            saveAll();
+            renderProducts(products);
+            renderAdminProducts();
+        }
+
+        function addToCart(id) {
+            rememberProduct(id);
+            cart.push(products.find(p => p.id === id));
+            document.getElementById('cart-count').innerText = cart.length;
+            showToast('カートに追加しました');
+        }
+
+        function openCartModal() {
+            openModal('cart-modal');
+            const container = document.getElementById('cart-items');
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price;
+                return `<div style="padding:0.4rem 0; border-bottom:1px solid var(--border-color);">${item.title} - ¥${item.price}</div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = total.toLocaleString();
+        }
+
+        function previewVoice(id) {
+            const product = products.find(p => p.id === id);
+            if (!product || !product.audio) return;
+            const audio = document.getElementById(`preview-audio-${id}`);
+            const button = document.getElementById(`preview-btn-${id}`);
+            if (!audio) return;
+
+            document.querySelectorAll('.trial-audio').forEach(a => {
+                if (a !== audio) {
+                    a.pause();
+                    a.currentTime = 0;
+                }
+            });
+
+            if (!audio.paused) {
+                audio.pause();
+                audio.currentTime = 0;
+                if (button) button.textContent = '▶ 試し聞き（15秒）';
+                return;
+            }
+
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+            if (button) button.textContent = '■ 試し聞きを停止';
+
+            const stopPreview = () => {
+                if (audio.currentTime >= 15) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    if (button) button.textContent = '▶ 試し聞き（15秒）';
+                }
+            };
+            audio.ontimeupdate = stopPreview;
+            audio.onended = () => {
+                if (button) button.textContent = '▶ 試し聞き（15秒）';
+            };
+        }
+
+        function downloadDataUrl(dataUrl, filename) {
+            if (!dataUrl) return false;
+            const a=document.createElement('a'); a.href=dataUrl; a.download=filename;
+            document.body.appendChild(a); a.click(); a.remove(); return true;
+        }
+
+        function getDataUrlExtension(dataUrl, fallback) {
+            const match = String(dataUrl || '').match(/^data:([^;,]+)[;,]/i);
+            if (!match) return fallback;
+            const mime = match[1].toLowerCase();
+            const map = {
+                'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp',
+                'audio/mpeg':'mp3','audio/mp3':'mp3','audio/wav':'wav','audio/x-wav':'wav',
+                'audio/ogg':'ogg','audio/mp4':'m4a','audio/aac':'aac','audio/webm':'webm'
+            };
+            return map[mime] || fallback;
+        }
+
+        function downloadDataUrl(dataUrl, filename) {
+            if (!dataUrl) return false;
+            try {
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = filename;
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                return true;
+            } catch (e) {
+                console.error('download failed', e);
+                return false;
+            }
+        }
+
+        function downloadPurchasedItem(item) {
+            if (!item) return false;
+            const safe = (item.title || '購入商品').replace(/[\\/:*?"<>|]/g, '_');
+            let downloaded = false;
+
+            // 購入した商品の音声をそのまま保存
+            if (item.audio) {
+                const ext = getDataUrlExtension(item.audio, 'mp3');
+                downloaded = downloadDataUrl(item.audio, `${safe}_ボイス.${ext}`) || downloaded;
+            }
+
+            // 商品カードに設定されている画像をそのまま保存
+            if (item.thumb) {
+                const ext = getDataUrlExtension(item.thumb, 'png');
+                downloaded = downloadDataUrl(item.thumb, `${safe}_画像.${ext}`) || downloaded;
+            }
+
+            return downloaded;
+        }
+
+        function checkout() {
+            if (cart.length === 0) return alert('カートが空です');
+            let txt = "【星雲OFFICIAL SHOP】購入完了データリスト\n\n";
+            cart.forEach((i, index) => {
+                txt += `・${i.title} (価格: ¥${i.price})\n`;
+                purchaseHistory.unshift({ user: currentUser.username, item: i, date: new Date().toLocaleString() });
+                setTimeout(() => downloadPurchasedItem(i), index * 350);
+            });
+            saveAll();
+
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "購入コンテンツデータリスト.txt";
+            a.click();
+
+            cart = [];
+            document.getElementById('cart-count').innerText = 0;
+            closeModal('cart-modal');
+            showToast('購入完了しました');
+        }
+
+        function openHistoryModal() {
+            openModal('history-modal');
+            const container = document.getElementById('history-items');
+            const userHistory = purchaseHistory.filter(h => h.user === currentUser.username);
+            if (userHistory.length === 0) {
+                container.innerHTML = '<p style="font-size:0.85rem;">購入履歴はありません。</p>';
+                return;
+            }
+            container.innerHTML = userHistory.map(h => `
+                <div class="admin-item-row">
+                    <small style="color:var(--text-muted);">${h.date}</small><br>
+                    <b>${h.item.title}</b> - ¥${h.item.price}<br>
+                    ${(h.item.audio || h.item.thumb) ? `<button style="margin-top:.4rem;" onclick='downloadPurchasedItem(${JSON.stringify(h.item).replace(/'/g,"&#39;")})'>購入データを再ダウンロード</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>
